@@ -13,9 +13,12 @@ import pandas as pd
 
 def loadprep_vgsales(path):
     """
-    This function is a one off function to clean a video game sales
-    and reviews dataset from Kaggle.
+    This function's sole purpose is to clean Rush Kirubi's video game sales
+    and reviews dataset from Kaggle for Jaqueline and Josh's class project.
+
     Source: https://www.kaggle.com/rush4ratio/video-game-sales-with-ratings
+    File: Video_Games_Sales_as_at_22_Dec_2016.csv
+
     We don't use regional sales as they're not useful for our purposes.
     The features 'User_Score' and 'User_Count' are the non-critic, user scores
     from Metacritic. These features aren't used as they're rather low quality
@@ -53,7 +56,7 @@ def loadprep_vgsales(path):
                         "Publisher": "category",
                         "Developer": "category",
                         "Rating": "category",
-                        "Critic_Score": "Int64",
+                        "Critic_Score": "float64",
                         "Critic_Count": "Int64",
                         "Year_of_Release": "Int64",
                         "Name": str}

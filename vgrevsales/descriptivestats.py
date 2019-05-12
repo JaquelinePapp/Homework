@@ -33,7 +33,7 @@ def print_descriptive(vgsales, header="=" * 60, begin=2005, end=2016):
     # Metacritic Min/Max
     print("The lowest Metacritic average during these years was {0}. The game "
           "with this dubious honor is {1}. On the other end of the spectrum, "
-          "the highest average rating of {2} to {3} was {4} held by {3}.\n"
+          "the highest average rating of {2} to {3} was {4} held by {5}.\n"
           .format(vgsales.Metacritic.min(), vgsales.Metacritic.idxmin(),
                   begin, end, vgsales.Metacritic.max(),
                   vgsales.Metacritic.idxmax()))
