@@ -40,9 +40,25 @@ def review_sales_hexbins(vgsales):
 
     # Titles and labels
     hexgraph.set_axis_labels(xlabel="Metacritic review scores",
-                             ylabel="Global sales")
-    hexgraph.ax_joint.set_title("Sales by review scores")
+                             ylabel="Global sales (millions)")
+
+    hexgraph.ax_marg_x.set_title("Sales by review scores")
 
     plt.show()
 
     return hexgraph
+
+
+def review_sales_hist(vgsales):
+    gensales = sns.catplot("Genre", "Sales", data=vgsales, kind="boxen")
+
+    gensales.set_xticklabels(rotation=45)
+    gensales.ax.set_yscale("log")
+    gensales.fig.set_size_inches(10, 10, forward=True)
+
+    gensales.ax.set_title("Game sales distributed by genre")
+    gensales.set_axis_labels(y_var="Global sales (millions)")
+
+    plt.show()
+
+    return gensales

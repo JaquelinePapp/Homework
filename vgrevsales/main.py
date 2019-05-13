@@ -12,6 +12,7 @@ from argparse import ArgumentParser
 
 from loadprep import loadprep_vgsales
 from loadprep import year_range_vgsales
+from loadprep import set_seaborn_opts
 from descriptivestats import print_descriptive
 from analysis import review_sales_hexbins
 

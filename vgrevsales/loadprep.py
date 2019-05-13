@@ -9,6 +9,7 @@
 # =============================================================================
 
 import pandas as pd
+import seaborn as sns
 
 
 def loadprep_vgsales(path):
@@ -91,3 +92,8 @@ def year_range_vgsales(vgsales, begin=2005, end=2016):
     ltwomil = years.loc[years.Sales < 2]
 
     return (years, mfivemil, lfivemil, ltwomil)
+
+
+def set_seaborn_opts():
+    sns.set(style="ticks", font_scale=1.25)
+    sns.despine()
