@@ -9,6 +9,7 @@
 # =============================================================================
 
 from argparse import ArgumentParser
+import sys
 
 from loadprep import loadprep_vgsales
 from loadprep import year_range_vgsales
@@ -16,10 +17,12 @@ from loadprep import set_seaborn_opts
 from descriptivestats import print_descriptive
 from analysis import review_sales_hexbins
 from analysis import genre_sales_boxen
+from analysis import review_sales_ecdf
 
 
 def parse_args():
     """
+    This function handles arguments passed into the script when run.
     """
 
     varargsparser = ArgumentParser()
@@ -36,23 +39,17 @@ def parse_args():
     return varargs
 
 
-def main_error_handler(e, path):
-    print("Error: Unable to load the required dataset. Tried: {0}"
-          .format(path))
-
-    print("Python error: {0}".format(e))
-
-
 if __name__ == "__main__":
     vgsales = None
 
     try:
         arguments = parse_args()
         vgsales = loadprep_vgsales(arguments.vgsales)
-    except ValueError as e:
-        main_error_handler(e, arguments.vgsales)
-    except FileNotFoundError as e:
-        main_error_handler(e, arguments.vgsales)
+    except (ValueError, FileNotFoundError) as e:
+        sys.exit("Error {0}: Unable to load the required dataset. Tried: {1}\n"
+                 "You may pass in a path using the -vgsales switch if the "
+                 "dataset is in another directory."
+                 .format(e.errno, arguments.vgsales))
 
     # Now that that's out of the way, we can run all of our projects' functions
     # here.
