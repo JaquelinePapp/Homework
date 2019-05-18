@@ -26,7 +26,7 @@ def parse_args():
     """
 
     varargsparser = ArgumentParser()
-    varargsparser.add_argument("-vgsales",
+    varargsparser.add_argument("-v", "--vgsales",
                                help="Path to a dataset compatible with "
                                "Video_Games_Sales_as_at_22_Dec_2016.csv")
 

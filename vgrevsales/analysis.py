@@ -8,16 +8,6 @@
 # (Working) Project Title: Do review scores affect video game sales?
 # =============================================================================
 
-# =============================================================================
-# Notes:
-# https://stackoverflow.com/questions/13851535/how-to-delete-rows-from-a-pandas-dataframe-based-on-a-conditional-expression
-#
-# Get gen 3/4.
-#
-# Use groupby.
-# =============================================================================
-
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from statsmodels.distributions.empirical_distribution import ECDF
@@ -49,7 +39,7 @@ def review_sales_hexbins(vgsales):
     hexgraph.set_axis_labels(xlabel="Metacritic review scores",
                              ylabel="Global sales (millions)")
 
-    hexgraph.ax_marg_x.set_title("Sales by review scores")
+    hexgraph.ax_marg_x.set_title("Sales by review scores", weight="bold")
 
     plt.show()
 
@@ -76,7 +66,7 @@ def genre_sales_boxen(vgsales, sizex=10, sizey=10):
     gensales.ax.set_yscale("log")
     gensales.fig.set_size_inches(sizex, sizey, forward=True)
 
-    gensales.ax.set_title("Game sales distributed by genre")
+    gensales.ax.set_title("Game sales distributed by genre", weight="bold")
     gensales.set_axis_labels(y_var="Global sales (millions)")
 
     plt.show()
@@ -86,39 +76,45 @@ def genre_sales_boxen(vgsales, sizex=10, sizey=10):
 
 def review_sales_ecdf(vgsales, sizex=10, sizey=10):
     """
-    ECDF
+    Plots ECDFs for review scores and sales on the same axes.
+
+    :param vgsales: DataFrame of the Video_Games_Sales_as_at_22_Dec_2016
+    dataset or equivalent.
+
+    :param sizex: Size in inches(?) of the width of the plot.
+
+    :param sizey: Size in inches(?) of the height of the plot.
     """
-    # THIS REALLY HAS TO BE REFACTORED. AHH.
-    # Also todo: fill under curves
-    # And color axis labels for both x
     fig, ax = plt.subplots()
     fig.set_size_inches(sizex, sizey, forward=True)
-    ax.set_ylabel("ECDF")
-    ax.set_title("ECDF review averages and sales")
 
     # Review ECDF and plot
     rev_ecdf = ECDF(vgsales.Metacritic)
-    sns.lineplot(rev_ecdf.x, rev_ecdf.y, color="g", label="Reviews",
+    sns.lineplot(rev_ecdf.x, rev_ecdf.y, color="firebrick", label="Reviews",
                  linestyle="--", marker="D", ax=ax)
-    ax.set_xlabel("Review probability (0 to 100)")
 
-    # Sales ECDF and plots
+    # Sales ECDF and plot (shares y axis with ECDF above)
     twin_y = ax.twiny()
-    twin_y.set_xlabel("Sales probability (millions)")
+    twin_y.set_xscale("log")
 
     sales_ecdf = ECDF(vgsales.Sales)
-    sns.lineplot(sales_ecdf.x, sales_ecdf.y, label="Sales", color="purple",
+    sns.lineplot(sales_ecdf.x, sales_ecdf.y, label="Sales", color="slateblue",
                  linestyle="-.", marker="o", ax=twin_y)
 
 # =============================================================================
-#     There are a few observations (out of over fifteen thousand) that are much
-#     higher than the rest. We explictly discount this observations to show the
-#     ECDF for Sales without these outliers and plot it on the same plot.
+#     Labels, legend, and title for both plots
 # =============================================================================
-    # Replace with boolean array later
-    sales_slice_ecdf = ECDF(np.sort(vgsales.Sales)[-20:])
-    sns.lineplot(sales_slice_ecdf.x, sales_slice_ecdf.y, marker="x",
-                 linestyle=":", label="Sales < 20 million", ax=twin_y)
+    ax.set_title("ECDF review averages and sales", weight="bold")
+    ax.set_ylabel("ECDF")
+    ax.set_xlabel("Review probability (0 to 100)")
+    twin_y.set_xlabel("\nSales probability (millions)")
+
+    # The per Axes legends overlap with the plots, so we remove both and set
+    # a Figure legend which uses each label from every line object in each
+    # Axes
+    ax.get_legend().remove()
+    twin_y.get_legend().remove()
+    fig.legend(loc=2, bbox_to_anchor=(1, 1))  # Fix later
 
     plt.show()
 

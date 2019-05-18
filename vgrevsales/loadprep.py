@@ -77,21 +77,51 @@ def loadprep_vgsales(path):
             .rename(columns_new_names, axis="columns"))
 
 
-def year_range_vgsales(vgsales, begin=2005, end=2016):
+def clean_features(vgsales):
     """
-    This function will further clean up vgsales then return a tuple of useful,
-    reusable observations. Currently it returns a slice from 'begin' to 'end'
-    in terms of years. Will return other stuff later.
-    The notes for the dataset states that it ends at 2016, but there seems to
-    be noise after 2016.
+    This function cleans up some of the dataset's features. The dataset is
+    quite messy as many values are missing from both categorical and numerical
+    features. Many of these features are difficult to impute in a reasonable
+    manner.
+
+    <class 'pandas.core.frame.DataFrame'>
+    Index: 16719 entries, Wii Sports to Winning Post 8 2016
+    Data columns (total 9 columns):
+    Platform        16719 non-null category
+    Release         16450 non-null Int64
+    Genre           16717 non-null category
+    Publisher       16665 non-null category
+    Sales           16719 non-null float64
+    Metacritic      8137 non-null float64
+    Metacritic_N    8137 non-null Int64
+    Developer       10096 non-null category
+    ESRB            9950 non-null category
+    dtypes: Int64(2), category(5), float64(2)
+    memory usage: 1.5+ MB
+
+    Some of the hardest features to impute (genre or platform, for example)
+    don't have many nulls. Others, like the review averages, can be imputed.
+
+    :param path: A path to a Video_Games_Sales_as_at_22_Dec_2016.csv compatible
+    dataset.
     """
-    years = vgsales.loc[(vgsales.Release >= begin) & (vgsales.Release <= end)]
 
-    mfivemil = years.loc[years.Sales > 5]
-    lfivemil = years.loc[years.Sales < 5]
-    ltwomil = years.loc[years.Sales < 2]
+    # A few of the release years are set to 2020 or other years past 2016.
+    # Just setting them to 2016 here. They're not a lot of them anyway.
+    vgsales.Release.loc[vgsales.Release > 2016] = 2016
 
-    return (years, mfivemil, lfivemil, ltwomil)
+# =============================================================================
+#     https://en.wikipedia.org/wiki/Entertainment_Software_Rating_Board
+#
+#     The ESRB feature will be converted to an ordinal variable for machine
+#     learning during preprocessing later. Thus, we organize them here and
+#     add an NA for missing values.
+# =============================================================================
+
+    esrb_ordinal = ["NA", "RP", "EC", "E", "E10+", "T", "M", "AO"]
+    vgsales.ESRB.cat.set_categories(esrb_ordinal, True, False, True)
+
+    return vgsales
 
 
 def set_seaborn_opts():
