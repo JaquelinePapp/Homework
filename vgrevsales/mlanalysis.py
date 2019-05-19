@@ -70,3 +70,18 @@ def linear_regression(vgsales):
     plt.show()
 
     return scatter
+
+
+def K_Means(vgsales):
+    
+    df = pd.DataFrame(vgsales.filter(['Metacritic', 'Sales']))
+    kmeans = KMeans(n_clusters=3).fit(df)
+    centroids = kmeans.cluster_centers_
+    print(centroids)
+    
+    kscatter = plt.scatter(df['Metacritic'], df['Sales'], c= kmeans.labels_.astype(float), s=50, alpha=0.5)
+    plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
+    plt.ylim(0, 10)
+    plt.show() 
+
+    return kscatter
