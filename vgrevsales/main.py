@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 import sys
 
 from loadprep import loadprep_vgsales
-from loadprep import year_range_vgsales
+from loadprep import clean_features
 from loadprep import set_seaborn_opts
 from descriptivestats import print_descriptive
 from analysis import review_sales_hexbins
@@ -45,6 +45,7 @@ if __name__ == "__main__":
     try:
         arguments = parse_args()
         vgsales = loadprep_vgsales(arguments.vgsales)
+        clean_features(vgsales)
     except (ValueError, FileNotFoundError) as e:
         sys.exit("Error {0}: Unable to load the required dataset. Tried: {1}\n"
                  "You may pass in a path using the -vgsales switch if the "

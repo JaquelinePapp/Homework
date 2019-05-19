@@ -8,20 +8,42 @@
 # (Working) Project Title: Do review scores affect video game sales?
 # =============================================================================
 
-import numpy as np #for arrays
-import matplotlib.pyplot as plt #for visualization
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.cluster import KMeans
+from pandas.core.dtypes.dtypes import CategoricalDtype
+
+
+def mean_jitter(val, mean, rand):
+    if pd.isna(val):
+        return mean + float(rand.randint(1, 100) / 10)
+    else:
+        return val
 
 def pre_preprocess_features(vgsales):
     """
     """
-    # Oh dear, this is a mess.
+    # We explictly want to work with a copy here.
     vgsales_copy = vgsales.copy()
+    # Turn ESRB into a ordinal variable (type: Int64 now).
     vgsales_copy.ESRB = vgsales.ESRB.factorize(True)[0]
+    # Random generator for mean jitter
+    jittergen = np.random.RandomState(42)
 
+    for col in vgsales_copy.columns:
+        if isinstance(vgsales_copy[col], CategoricalDtype):
+            # Add an NA category to each categorical feature if required
+            if "NA" not in vgsales_copy[col].cat.categories:
+                vgsales_copy[col].cat.add_categories("NA", inplace=True)
+            vgsales_copy[col].fillna("NA", inplace=True)
+        else:
+            vgsales_copy[col] = vgsales_copy[col].apply(mean_jitter,
+                        mean = vgsales_copy[col].mean(),
+                        rand=jittergen)
 
 
     #vgsales.Genre.dtypes.categories.append(pd.Index(catd))
@@ -30,14 +52,12 @@ def pre_preprocess_features(vgsales):
     #onehot =
 
 def preprocess_vgsales(vgsales):
-    for x in range(1984, 2017):
-        vgsales[vgsales.Release == x].info()
-        
-        
+    pass
+
 def linear_regression(vgsales):
 
     reg = LinearRegression()
-    X = vgsales["Metacritic"].values.reshape(-1, 1)  
+    X = vgsales["Metacritic"].values.reshape(-1, 1)
     Y = vgsales["Sales"].values.reshape(-1, 1)
     reg.fit(X, Y)  #perform linear regression
     Y_pred = reg.predict(X)
