@@ -126,13 +126,13 @@ def linear_regression(vgsales):
     X = vgsales["Metacritic"].values.reshape(-1, 1)
     Y = vgsales["Sales"].values.reshape(-1, 1)
     reg.fit(X, Y)
-    Y_pred = reg.predict(X)
+    Y_pred = reg.predict(X_train)
 
 
-    scatter = plt.scatter(X, Y)
+    scatter = plt.scatter(X_test, y_test)
     plt.title('Linear Regression')
     plt.yscale('log')
-    plt.plot(X, Y_pred, color='red')
+    plt.plot(X_train, Y_pred, color='red')
     plt.show()
 
     return scatter
@@ -145,7 +145,9 @@ def K_Means(vgsales):
     centroids = kmeans.cluster_centers_
     print(centroids)
 
-    kscatter = plt.scatter(df['Metacritic'], df['Sales'], c= kmeans.labels_.astype(float), s=50, alpha=0.5)
+    kscatter = plt.scatter(df['Metacritic'], 
+                           df['Sales'], c= kmeans.labels_.astype(float), 
+                           s=50, alpha=0.5)
     plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
     plt.ylim(0, 10)
     plt.show()
