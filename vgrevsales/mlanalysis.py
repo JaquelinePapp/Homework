@@ -11,14 +11,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from pandas.core.dtypes.dtypes import CategoricalDtype
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import RobustScaler
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PowerTransformer
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from sklearn.metrics import explained_variance_score
+
 from sklearn.linear_model import Ridge
 from sklearn.cluster import KMeans
+from sklearn.neighbors import KNeighborsClassifier
 
 
 def mean_jitter(val, mean, quantdiff, rand):
@@ -94,27 +99,28 @@ def preprocess_vgsales(vgsales_nonulls):
 #     Source: https://scikit-learn.org/stable/modules/preprocessing.html
 # =============================================================================
 
-    vgscaled = RobustScaler().fit_transform(vgdummies)
+    vgscaled = PowerTransformer().fit_transform(vgdummies)
     vgscaled = pd.DataFrame(vgscaled, columns=vgdummies.columns)
 
     return vgscaled
 
 
-def linear_regression(vgsales):
+def ridge_model(vgscaled):
     """
     """
     # X: Everything BUT Sales
     # y: Sales
     X_train, X_test, y_train, y_test = train_test_split(
-            vgsales.loc[:, vgsales.columns != "Sales"],
-            vgsales[["Sales"]],
+            vgscaled.loc[:, vgscaled.columns != "Sales"],
+            vgscaled[["Sales"]],
             test_size=.3,
             random_state=42)
 
-    ridge_param = {"alpha": np.append(np.array(range(1, 11))/10,
-                                      np.array(range(0, 55, 5)))}
+    ridge_param = {"alpha": np.array(range(0, 11))/10,
+                   "tol": [.001, .00001]}
 
-    ridge_gridsearch = GridSearchCV(Ridge(),
+    ridge_gridsearch = GridSearchCV(Ridge(random_state=42,
+                                          fit_intercept=False),
                                     ridge_param,
                                     scoring="neg_mean_squared_error",
                                     n_jobs=-1,
@@ -122,32 +128,82 @@ def linear_regression(vgsales):
 
     ridge_gridsearch.fit(X_train, y_train)
 
-    reg = LinearRegression()
-    X = vgsales["Metacritic"].values.reshape(-1, 1)
-    Y = vgsales["Sales"].values.reshape(-1, 1)
-    reg.fit(X, Y)
-    Y_pred = reg.predict(X)
+    return ridge_gridsearch, vgscaled, X_train, X_test, y_train, y_test
 
 
-    scatter = plt.scatter(X, Y)
-    plt.title('Linear Regression')
-    plt.yscale('log')
-    plt.plot(X, Y_pred, color='red')
+def plot_ridge_model(model, vgscaled, X_train, X_test, y_train,
+                     y_test, sizex=14, sizey=14):
+    """
+    """
+    # Titles, labels, and pyplot objects
+    fig, ax = plt.subplots()
+    fig.set_size_inches(sizex, sizey, forward=True)
+    ax.set_title("Ridge regression: Metacritic scores and game sales",
+                 weight="bold")
+    ax.set_xlabel("Metacritic review averages (normalized)")
+    ax.set_ylabel("Sales (normalized)")
+
+    # Plots
+    sns.scatterplot(X_train.Metacritic, y_train.Sales, color="deepskyblue",
+                    label="Training set", ax=ax)
+    sns.scatterplot(X_test.Metacritic, y_test.Sales, color="slateblue",
+                    label="Sales (true)", ax=ax)
+    y_pred = model.predict(X_test)
+    sns.scatterplot(X_test.Metacritic, y_pred.reshape(-1), color="crimson",
+                    label="Sales (prediction)", ax=ax)
+
+    # Text box for model information
+# =============================================================================
+#     coef_df = pd.DataFrame(model.best_estimator_.coef_,
+#                            columns=vgscaled.drop("Sales", axis=1).columns)
+# =============================================================================
+
+    model_text = ("MSE: {0}\n"
+                  "r^2: {1}\n"
+                  "explained variance: {2}"
+                  .format(mean_squared_error(y_test, y_pred),
+                          r2_score(y_test, y_pred),
+                          explained_variance_score(y_test, y_pred)))
+
+    ax.text(.015, .89, model_text, transform=ax.transAxes, fontsize=12,
+            verticalalignment="top", bbox={"boxstyle": "round", "alpha": .5,
+                                           "facecolor": "lightcyan"})
+
     plt.show()
 
-    return scatter
+    return fig, ax
 
 
-def K_Means(vgsales):
+def knn_model(vgscaled):
+    """
+    """
+    # X: Everything BUT Sales
+    # y: Sales
+    X_train, X_test, y_train, y_test = train_test_split(
+            vgscaled.loc[:, vgscaled.columns != "Sales"],
+            vgscaled[["Sales"]],
+            test_size=.3,
+            random_state=42)
 
-    df = pd.DataFrame(vgsales.filter(['Metacritic', 'Sales']))
-    kmeans = KMeans(n_clusters=3).fit(df)
-    centroids = kmeans.cluster_centers_
-    print(centroids)
+    knn_param = {"n_neighbors": list(range(1, 33)),
+                 "weights": ["uniform", "distance"]}
 
-    kscatter = plt.scatter(df['Metacritic'], df['Sales'], c= kmeans.labels_.astype(float), s=50, alpha=0.5)
-    plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
-    plt.ylim(0, 10)
-    plt.show()
+    knn_gridsearch = GridSearchCV(KNeighborsClassifier(n_jobs=-1),
+                                  knn_param,
+                                  scoring="accuracy",
+                                  n_jobs=-1,
+                                  cv=10)
 
-    return kscatter
+    knn_gridsearch.fit(X_train, y_train)
+
+    return knn_gridsearch, vgscaled, X_train, X_test, y_train, y_test
+
+
+def plot_knn_model(model, vgscaled, X_train, X_test, y_train, y_test,
+                   sizex=14, sizey=14):
+    """
+    """
+
+    fig, ax = plt.subplots()
+    ax.set_title("kNN", weight="bold")
+    ax.set_size_inces(sizex, sizey, forward=True)
