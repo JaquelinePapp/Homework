@@ -3,9 +3,9 @@
 # =============================================================================
 # SOC 765 | Introduction to Computational Social Science
 # Spring 2019
-# Project II
+# Project III
 # Names: Jaqueline Papp and Joshua Megnauth
-# (Working) Project Title: Do review scores affect video game sales?
+# Project Title: Do review scores affect video game sales?
 # =============================================================================
 
 import matplotlib.pyplot as plt
@@ -87,10 +87,13 @@ def preprocess_vgsales(vgsales_nonulls):
     vgdummies.drop("Metacritic_N", axis="columns", inplace=True)
 
 # =============================================================================
-#     According to the sklearn documents, a RobustScaler is better to use for
-#     data with many outliers. We fit and transform our dataset after creating
-#     dummy variables. Scikit-learn returns NumPy arrays, thus we recreate a
-#     Pandas DataFrame using the scaled matrix with the columns from vgdummies.
+#     According to the sklearn documents, certain normalizers are more
+#     appropriate for dealing with data with many outliers. We opted to use
+#     PowerTransformer which led to the best results.
+#
+#     We fit and transform our dataset after creating dummy variables.
+#     Scikit-learn returns NumPy arrays, thus we recreate a Pandas DataFrame
+#     using the scaled matrix with the columns from vgdummies.
 #
 #     You may wonder why we didn't make a pipeline. We can reuse our scaled
 #     variable for other ML algorithms. I'm not sure if that's possible with

@@ -3,9 +3,9 @@
 # =============================================================================
 # SOC 765 | Introduction to Computational Social Science
 # Spring 2019
-# Project II
+# Project III
 # Names: Jaqueline Papp and Joshua Megnauth
-# (Working) Project Title: Do review scores affect video game sales?
+# Project Title: Do review scores affect video game sales?
 # =============================================================================
 
 import matplotlib.pyplot as plt
@@ -114,7 +114,8 @@ def review_sales_ecdf(vgsales, sizex=10, sizey=10):
     # Axes
     ax.get_legend().remove()
     twin_y.get_legend().remove()
-    fig.legend(loc=2, bbox_to_anchor=(1, 1))  # Fix later
+    fig.legend(loc=2, bbox_to_anchor=(.015, 1),
+               bbox_transform=ax.transAxes)
 
     plt.show()
 

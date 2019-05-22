@@ -3,9 +3,9 @@
 # =============================================================================
 # SOC 765 | Introduction to Computational Social Science
 # Spring 2019
-# Project II
+# Project III
 # Names: Jaqueline Papp and Joshua Megnauth
-# (Working) Project Title: Do review scores affect video game sales?
+# Project Title: Do review scores affect video game sales?
 # =============================================================================
 
 import pandas as pd

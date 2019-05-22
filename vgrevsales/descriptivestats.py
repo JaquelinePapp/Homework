@@ -3,13 +3,16 @@
 # =============================================================================
 # SOC 765 | Introduction to Computational Social Science
 # Spring 2019
-# Project II
+# Project III
 # Names: Jaqueline Papp and Joshua Megnauth
-# (Working) Project Title: Do review scores affect video game sales?
+# Project Title: Do review scores affect video game sales?
 # =============================================================================
 
 
-def print_descriptive(vgsales, header="=" * 60, begin=2005, end=2016):
+def print_descriptive(vgsales, header="=" * 60, begin=1984, end=2016):
+    """
+    Prints descriptive statistics for the Metacritic average and Sales.
+    """
     print(header + "\nDescriptive Statistics\n" + header)
 
     # Mean and standard deviation of Metacritic scores
@@ -39,5 +42,17 @@ def print_descriptive(vgsales, header="=" * 60, begin=2005, end=2016):
                   vgsales.Metacritic.idxmax()))
 
     # Quantiles
-    print(vgsales.Sales.quantile([.25, .50, .75]))
-    print(vgsales.Metacritic.quantile([.25, .50, .75]))
+    sales_quant = vgsales.Sales.quantile([.25, .50, .75])
+    print("Sales quantiles:\n"
+          "25th: {0}\n"
+          "50th: {1}\n"
+          "75th: {2}\n"
+          .format(sales_quant[.25], sales_quant[.50], sales_quant[.75]))
+
+    metacritic_quant = vgsales.Metacritic.quantile([.25, .50, .75])
+    print("Metacritic quantiles:\n"
+          "25th: {0}\n"
+          "50th: {1}\n"
+          "75th: {2}"
+          .format(metacritic_quant[.25], metacritic_quant[.50],
+                  metacritic_quant[.75]))

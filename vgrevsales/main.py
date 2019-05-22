@@ -3,9 +3,9 @@
 # =============================================================================
 # SOC 765 | Introduction to Computational Social Science
 # Spring 2019
-# Project II
+# Project III
 # Names: Jaqueline Papp and Joshua Megnauth
-# (Working) Project Title: Do review scores affect video game sales?
+# Project Title: Do review scores affect video game sales?
 # =============================================================================
 
 from argparse import ArgumentParser
@@ -18,6 +18,9 @@ from descriptivestats import print_descriptive
 from analysis import review_sales_hexbins
 from analysis import genre_sales_boxen
 from analysis import review_sales_ecdf
+from mlmodels import chisquare_salesmeta
+from mlmodels import all_features_ridgemodel
+from mlmodels import drop_nulls_ridgemodel
 
 
 def parse_args():
@@ -48,13 +51,16 @@ if __name__ == "__main__":
         clean_features(vgsales)
     except (ValueError, FileNotFoundError) as e:
         sys.exit("Error {0}: Unable to load the required dataset. Tried: {1}\n"
-                 "You may pass in a path using the -vgsales switch if the "
-                 "dataset is in another directory."
+                 "You may pass in a path using the --vgsales or -v "
+                 "switches if the dataset is in another directory."
                  .format(e.errno, arguments.vgsales))
 
     # Now that that's out of the way, we can run all of our projects' functions
-    # here.
+    # here. This is temporary for the submission.
     set_seaborn_opts()
     print_descriptive(vgsales)
     review_sales_hexbins(vgsales)
     genre_sales_boxen(vgsales)
+    review_sales_ecdf(vgsales)
+    all_features_ridgemodel(vgsales)
+    drop_nulls_ridgemodel(vgsales)
