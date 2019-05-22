@@ -177,6 +177,26 @@ def plot_ridge_model(model, vgscaled, X_train, X_test, y_train,
     return fig, ax
 
 
+def K_Means(vgsales):
+    
+    df = pd.DataFrame(vgsales.filter(['Metacritic', 'Sales']))
+    kmeans = KMeans(n_clusters=4).fit(df)
+    centroids = kmeans.cluster_centers_
+    print(centroids)
+    
+    kscatter = plt.scatter(df['Metacritic'], 
+                           df['Sales'], c= kmeans.labels_.astype(float), 
+                           s=50, alpha=0.5)
+    plt.scatter(centroids[:, 0], centroids[:, 1], c='red', s=50)
+    plt.ylim(0, 10)
+    plt.title('K-Means Clusters for Critic Scores and Sales')
+    plt.ylabel('Global sales (millions)')
+    plt.xlabel('Metacritic score')
+    plt.show() 
+
+    return kscatter
+
+
 def knn_model(vgscaled):
     """
     """
