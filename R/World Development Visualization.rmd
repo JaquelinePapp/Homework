@@ -1,0 +1,88 @@
+---
+title: "Visualization"
+author: "Jaqueline Papp"
+date: "September 23, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setting up packages and data
+
+```{r}
+library(readxl)
+install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+library(ggplot2)
+
+setwd("E:/DATA 712")
+data <- read_xlsx("WDI 2015 Extract.xlsx", sheet = 1)
+data <- data.frame(data)
+```
+
+## Constructing graph for univariate distribution
+```{r}
+data$suicide.cat <- cut(data$suicide, breaks = c(0, 5, 10, 15, 20, 25, 30, 35))
+data$suicide.cat <- factor(data$suicide.cat, ordered = T, labels = c("0-5", "5-10", "15-20", "20-25", "25-30", "30-35", "35+"))
+data <- subset(data, !is.na(suicide))
+graph.1 <- ggplot(data, aes(x = suicide.cat)) + geom_histogram(stat = 'count')
+graph.1 <- graph.1 + ggtitle("Frequency of Suicide Across Countries") + ylab("# of Countries") + xlab("Suicide Rates")
+```
+
+## Constructing graph for bivariate relationship between discrete variables
+```{r}
+data$gdp.cat <- cut(data$gdp.pc, breaks = c(0, 5000, 10000, 20000, 30000, 200000))
+data$gdp.cat <- factor(data$gdp.cat, ordered = T, labels = c("Below $5k", "$5k - 10k", "$10k - 20k", "$20k - 30k", "Above $30k"))
+data <- subset(data, !is.na(gdp.pc))
+TAB.1 <- prop.table(table(data$gdp.cat, data$suicide.cat), 1)
+TAB.1 <- data.frame(TAB.1)
+names(TAB.1) <- paste(c("GDP", "SuicideRate", "Frequency"))
+graph.2 <- ggplot(TAB.1, aes(x = GDP, y = Frequency, fill = SuicideRate)) + geom_bar(stat = 'identity')
+```
+
+## Constructing graph for bivariate relationship
+```{r}
+TAB.2 <- aggregate(pop.density ~ suicide.cat, data, mean)
+TAB.2 <- data.frame(TAB.2)
+graph.3 <- ggplot(TAB.2, aes(x = suicide.cat, y = pop.density)) + geom_bar(stat = 'identity')
+graph.3 <- graph.3 + ggtitle("Suicide Rates by Population Density") + ylab("Population Density") + xlab("Suicide Rates")
+```
+
+
+## Constructing graph for Birth Rates & Wealth
+```{r}
+data$gdp.cat <- cut(data$gdp.pc, breaks = c(0, 5000, 10000, 20000, 30000, 200000))
+data$gdp.cat <- factor(data$gdp.cat, ordered = T, labels = c("Below $5k", "$5k - 10k", "$10k - 20k", "$20k - 30k", "Above $30k"))
+data <- subset(data, !is.na(gdp.pc))
+TAB <- aggregate(birth.rate ~ gdp.cat, data, mean)
+TAB <- data.frame(TAB)
+graph.4 <- ggplot(TAB, aes(x = gdp.cat, y = birth.rate)) + geom_bar(stat = 'identity')
+graph.4 <- graph.4 + ggtitle("Birth Rates & Wealth") + ylab("Birth Rate") + xlab("Per Capita GDP") + scale_y_continuous(breaks = seq(0, 35, 5))
+```
+
+## Graphs
+
+```{r pressure, echo=FALSE}
+plot(graph.1)
+```
+
+**Figure 1** illustrates the frequency of suicide rates in the countries covered in the data. 5-10 per a population of 100,000 appears to be the most common recorded statistic.
+
+```{r, echo=FALSE}
+plot(graph.2)
+```
+
+**Figure 2** shows the frequency of suicide rates by GDP. The highest category of suicides per 100,000 (35+) can be found in the $20k - 30k range. 
+
+```{r, echo=FALSE}
+plot(graph.3)
+```
+
+**Figure 3** shows suicide rates based on the size of the recorded countries' populations. Countries with higher population density can be found in the 5-10 range and the 30-35 range.
+
+```{r, echo=FALSE}
+plot(graph.4)
+```
+
+**Figure 4** shows a relationship between a country's birth rate and its wealth. The relationship here appears linear, with the birth rate decreasing as wealth increases.
