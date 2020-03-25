@@ -1,0 +1,135 @@
+#Loading data
+setwd("C:/Users/Mary P/Desktop/R")
+data <- read.csv("hsls_16_student_v1_0.csv")
+
+#Selecting variables
+library(dplyr)
+DataSubset <- data %>%
+  select(STU_ID,
+         W1STUDENT,
+         X1TXMTSCOR,
+         S1HRVIDEO,
+         X1SEX,
+         X1HISPANIC,
+         X1WHITE,
+         X1BLACK,
+         X1DUALLANG,
+         X1PAREDU,
+         X1HHNUMBER,
+         X1SES,
+         X1MTHINT,
+         S1HRMHOMEWK,
+         X1STUEDEXPCT,
+         X1PAREDEXPCT,
+         X1CONTROL,
+         X1LOCALE,
+         X1COUPERTEA)
+
+#Cleaning data
+DataSubset$X1TXMTSCOR <- ifelse(DataSubset$X1TXMTSCOR <= -8, NA, DataSubset$X1TXMTSCOR)
+DataSubset$S1HRVIDEO <- ifelse(DataSubset$S1HRVIDEO < 0, NA, DataSubset$S1HRVIDEO)
+DataSubset$X1SEX <- ifelse(DataSubset$X1SEX < 0, NA, DataSubset$X1SEX)
+DataSubset$X1HISPANIC <- ifelse(DataSubset$X1HISPANIC < 0, NA, DataSubset$X1HISPANIC)
+DataSubset$X1WHITE <- ifelse(DataSubset$X1WHITE < 0, NA, DataSubset$X1WHITE)
+DataSubset$X1BLACK <- ifelse(DataSubset$X1BLACK < 0, NA, DataSubset$X1BLACK)
+DataSubset$X1DUALLANG <- ifelse(DataSubset$X1DUALLANG < 0, NA, DataSubset$X1DUALLANG)
+DataSubset$X1DUALLANG <- ifelse(DataSubset$X1DUALLANG == 3, 2, DataSubset$X1DUALLANG)
+DataSubset$X1PAREDU <- ifelse(DataSubset$X1PAREDU < 0, NA, DataSubset$X1PAREDU)
+DataSubset$X1HHNUMBER <- ifelse(DataSubset$X1HHNUMBER < 0, NA, DataSubset$X1HHNUMBER)
+DataSubset$X1SES <- ifelse(DataSubset$X1SES <= -8, NA, DataSubset$X1SES)
+DataSubset$X1MTHINT <- ifelse(DataSubset$X1MTHINT < 0, NA, DataSubset$X1MTHINT)
+DataSubset$S1HRMHOMEWK <- ifelse(DataSubset$S1HRMHOMEWK < 0, NA, DataSubset$S1HRMHOMEWK)
+DataSubset$X1STUEDEXPCT <- ifelse(DataSubset$X1STUEDEXPCT < 0, NA, DataSubset$X1STUEDEXPCT)
+DataSubset$X1STUEDEXPCT <- ifelse(DataSubset$X1STUEDEXPCT > 10, NA, DataSubset$X1STUEDEXPCT)
+DataSubset$X1PAREDEXPCT <- ifelse(DataSubset$X1PAREDEXPCT < 0, NA, DataSubset$X1PAREDEXPCT)
+DataSubset$X1PAREDEXPCT <- ifelse(DataSubset$X1PAREDEXPCT > 10, NA, DataSubset$X1PAREDEXPCT)
+DataSubset$X1CONTROL <- ifelse(DataSubset$X1CONTROL < 0, NA, DataSubset$X1CONTROL)
+DataSubset$X1LOCALE <- ifelse(DataSubset$X1LOCALE < 0, NA, DataSubset$X1LOCALE)
+
+DataSubset$Sex <- factor(DataSubset$X1SEX, ordered = F)
+DataSubset$Hispanic <- factor(DataSubset$X1HISPANIC, ordered = F)
+DataSubset$Black <- factor(DataSubset$X1BLACK, ordered = F)
+DataSubset$White <- factor(DataSubset$X1WHITE, ordered = F)
+
+
+#Visualizing data (unweighted)
+library(ggplot2)
+graph.1 <- ggplot(DataSubset, aes(x = S1HRVIDEO)) + geom_histogram(stat = 'count', bins = 10)
+graph.1 + labs(x = "# of Hours Playing video Games", y = "# of Students", title = "Hours Spent Playing Video Games")
+
+quantile(DataSubset$X1SES, na.rm = TRUE)
+DataSubset$SES.cat <- cut(DataSubset$X1SES, breaks = c(-2, -1, 0, 1, 3))
+DataSubset$SES.cat <- factor(DataSubset$SES.cat, ordered = T, labels = c("Low", "Lower Middle", "Upper Middle", "High"))
+TAB <- aggregate(S1HRVIDEO ~ SES.cat, DataSubset, mean)
+TAB <- data.frame(TAB)
+graph.2 <- ggplot(TAB, aes(x = SES.cat, y = S1HRVIDEO)) + geom_bar(stat = 'identity')
+graph.2 + labs(x = "Socioeconomic Status", y = "# of Hours Playing Video Games", title = "Hours Spent Playing Video Games by SES")
+
+#Weighting data
+library(survey)
+DataSurvey <- svydesign(id      = ~STU_ID,
+                        strata  = NULL,
+                        weights = ~W1STUDENT,
+                        nest    = FALSE,
+                        data    = DataSubset)
+
+#Visualizing data (weighted)
+##Video Games and SES
+TAB.2 <- svyby(formula = ~S1HRVIDEO, 
+             by = ~SES.cat, 
+             FUN = svymean, 
+             design = DataSurvey,
+             na.rm = TRUE, 
+             keep.names = FALSE)
+TAB.2 <- data.frame(TAB.2)
+graph.3 <- ggplot(TAB.2, aes(x = SES.cat, y = S1HRVIDEO)) + geom_bar(stat = 'identity')
+graph.3 + labs(x = "Socioeconomic Status", y = "Average # of Hours Playing Video Games", title = "Average # of Hours Spent Playing Video Games by SES")
+##Video Games and Gender
+TAB.3 <- svyby(formula = ~S1HRVIDEO, 
+               by = ~Sex, 
+               FUN = svymean, 
+               design = DataSurvey,
+               na.rm = TRUE, 
+               keep.names = FALSE)
+TAB.3 <- data.frame(TAB.3)
+graph.4 <- ggplot(TAB.3, aes(x = Sex, y = S1HRVIDEO)) + geom_bar(stat = 'identity')
+graph.4 + labs(x = "Gender", y = "Average # of Hours Playing Video Games", title = "Average # of Hours Spent Playing Video Games by Gender")
+##Video Games and Race (Hispanic)
+TAB.4 <- svyby(formula = ~S1HRVIDEO, 
+               by = ~Hispanic, 
+               FUN = svymean, 
+               design = DataSurvey,
+               na.rm = TRUE, 
+               keep.names = FALSE)
+TAB.4 <- data.frame(TAB.4)
+graph.5 <- ggplot(TAB.4, aes(x = Hispanic, y = S1HRVIDEO)) + geom_bar(stat = 'identity')
+graph.5 + labs(x = "Race", y = "Average # of Hours Playing Video Games", title = "Average # of Hours Spent Playing Video Games by Race")
+##Video Games and Race (Black)
+TAB.5 <- svyby(formula = ~S1HRVIDEO, 
+               by = ~Black, 
+               FUN = svymean, 
+               design = DataSurvey,
+               na.rm = TRUE, 
+               keep.names = FALSE)
+TAB.5 <- data.frame(TAB.5)
+graph.6 <- ggplot(TAB.5, aes(x = Black, y = S1HRVIDEO)) + geom_bar(stat = 'identity')
+graph.6 + labs(x = "Race", y = "Average # of Hours Playing Video Games", title = "Average # of Hours Spent Playing Video Games by Race")
+##Video Games and Race (White)
+TAB.6 <- svyby(formula = ~S1HRVIDEO, 
+               by = ~White, 
+               FUN = svymean, 
+               design = DataSurvey,
+               na.rm = TRUE, 
+               keep.names = FALSE)
+TAB.6 <- data.frame(TAB.6)
+graph.7 <- ggplot(TAB.6, aes(x = White, y = S1HRVIDEO)) + geom_bar(stat = 'identity')
+graph.7 + labs(x = "Race", y = "Average # of Hours Playing Video Games", title = "Average # of Hours Spent Playing Video Games by Race")
+
+#Pearson Correlation test
+install.packages("jtools")
+library(jtools)
+svycor(~S1HRVIDEO + X1TXMTSCOR, design = DataSurvey, na.rm = TRUE, digits = 4, sig.stats = TRUE)
+
+#T-test 
+svyttest(S1HRVIDEO ~ Sex, design = DataSurvey, na.rm = TRUE)
+svyttest(X1TXMTSCOR ~ Sex, design = DataSurvey, na.rm = TRUE)
