@@ -1,15 +1,20 @@
-#Loading data
-setwd("C:/Users/Mary P/Desktop/R")
+#Loading data and packages
+setwd("C:/Users/Desktop/R")
 data <- read.csv("hsls_16_student_v1_0.csv")
+#library(dplyr)
+#library(stats)
+#library(ggplot2)
+#library(survey)
+#library(jtools)
 
 #Selecting variables
-library(dplyr)
 DataSubset <- data %>%
   select(STU_ID,
          W1STUDENT,
          X1TXMTSCOR,
          S1HRVIDEO,
          X1SEX,
+         X1RACE,
          X1HISPANIC,
          X1WHITE,
          X1BLACK,
@@ -18,6 +23,12 @@ DataSubset <- data %>%
          X1HHNUMBER,
          X1SES,
          X1MTHINT,
+         S1MENJOYS,
+         S1MENJOYING,
+         S1MWASTE,
+         S1MBORING,
+         S1FAVSUBJ,
+         S1LEASTSUBJ,
          S1HRMHOMEWK,
          X1STUEDEXPCT,
          X1PAREDEXPCT,
@@ -29,6 +40,8 @@ DataSubset <- data %>%
 DataSubset$X1TXMTSCOR <- ifelse(DataSubset$X1TXMTSCOR <= -8, NA, DataSubset$X1TXMTSCOR)
 DataSubset$S1HRVIDEO <- ifelse(DataSubset$S1HRVIDEO < 0, NA, DataSubset$S1HRVIDEO)
 DataSubset$X1SEX <- ifelse(DataSubset$X1SEX < 0, NA, DataSubset$X1SEX)
+DataSubset$X1SEX <- ifelse(DataSubset$X1SEX == 2, 0, 1)
+DataSubset$X1RACE <- ifelse(DataSubset$X1RACE < 0, NA, DataSubset$X1RACE)
 DataSubset$X1HISPANIC <- ifelse(DataSubset$X1HISPANIC < 0, NA, DataSubset$X1HISPANIC)
 DataSubset$X1WHITE <- ifelse(DataSubset$X1WHITE < 0, NA, DataSubset$X1WHITE)
 DataSubset$X1BLACK <- ifelse(DataSubset$X1BLACK < 0, NA, DataSubset$X1BLACK)
@@ -38,6 +51,17 @@ DataSubset$X1PAREDU <- ifelse(DataSubset$X1PAREDU < 0, NA, DataSubset$X1PAREDU)
 DataSubset$X1HHNUMBER <- ifelse(DataSubset$X1HHNUMBER < 0, NA, DataSubset$X1HHNUMBER)
 DataSubset$X1SES <- ifelse(DataSubset$X1SES <= -8, NA, DataSubset$X1SES)
 DataSubset$X1MTHINT <- ifelse(DataSubset$X1MTHINT < 0, NA, DataSubset$X1MTHINT)
+DataSubset$S1MENJOYING <- ifelse(DataSubset$S1MENJOYING < 0, NA, DataSubset$S1MENJOYING)
+DataSubset$S1MENJOYING <- ifelse(DataSubset$S1MENJOYING <= 2, 1, 0)
+DataSubset$S1MENJOYS <- ifelse(DataSubset$S1MENJOYS < 0, NA, DataSubset$S1MENJOYS)
+DataSubset$S1MWASTE <- ifelse(DataSubset$S1MWASTE < 0, NA, DataSubset$S1MWASTE)
+DataSubset$S1MWASTE <- ifelse(DataSubset$S1MWASTE <= 2, 0, 1)
+DataSubset$S1MBORING <- ifelse(DataSubset$S1MBORING < 0, NA, DataSubset$S1MBORING)
+DataSubset$S1MBORING <- ifelse(DataSubset$S1MBORING <= 2, 0, 1)
+DataSubset$S1FAVSUBJ <- ifelse(DataSubset$S1FAVSUBJ < 0, NA, DataSubset$S1FAVSUBJ)
+DataSubset$S1FAVSUBJ <- ifelse(DataSubset$S1FAVSUBJ == 6, 1, 0)
+DataSubset$S1LEASTSUBJ <- ifelse(DataSubset$S1LEASTSUBJ < 0, NA, DataSubset$S1LEASTSUBJ)
+DataSubset$S1LEASTSUBJ <- ifelse(DataSubset$S1LEASTSUBJ == 6, 0, 1)
 DataSubset$S1HRMHOMEWK <- ifelse(DataSubset$S1HRMHOMEWK < 0, NA, DataSubset$S1HRMHOMEWK)
 DataSubset$X1STUEDEXPCT <- ifelse(DataSubset$X1STUEDEXPCT < 0, NA, DataSubset$X1STUEDEXPCT)
 DataSubset$X1STUEDEXPCT <- ifelse(DataSubset$X1STUEDEXPCT > 10, NA, DataSubset$X1STUEDEXPCT)
@@ -45,15 +69,43 @@ DataSubset$X1PAREDEXPCT <- ifelse(DataSubset$X1PAREDEXPCT < 0, NA, DataSubset$X1
 DataSubset$X1PAREDEXPCT <- ifelse(DataSubset$X1PAREDEXPCT > 10, NA, DataSubset$X1PAREDEXPCT)
 DataSubset$X1CONTROL <- ifelse(DataSubset$X1CONTROL < 0, NA, DataSubset$X1CONTROL)
 DataSubset$X1LOCALE <- ifelse(DataSubset$X1LOCALE < 0, NA, DataSubset$X1LOCALE)
+DataSubset$X1LOCALE <- ifelse(DataSubset$X1LOCALE >= 2, 0, DataSubset$X1LOCALE)
+DataSubset$S1HRVIDEO <- ifelse(DataSubset$S1HRVIDEO == 1, 0, DataSubset$S1HRVIDEO)
 
-DataSubset$Sex <- factor(DataSubset$X1SEX, ordered = F)
+DataSubset$VGfactor <- factor(DataSubset$S1HRVIDEO)
+DataSubset$Mathfactor <- cut(DataSubset$X1TXMTSCOR, breaks = c(0, 50, 1000))
+DataSubset$Mathfactor <- factor(DataSubset$X1TXMTSCOR, ordered = T)
+DataSubset$ParEduFactor <- factor(DataSubset$X1PAREDU, ordered = T)
+DataSubset$HouseholdFactor <- factor(DataSubset$X1HHNUMBER, ordered = T)
+DataSubset$MathInt.cat <- cut(DataSubset$X1MTHINT, breaks = c(0, 1, 2, 3))
+DataSubset$MathInt.cat <- factor(DataSubset$MathInt.cat, ordered = T, labels = c("Low", "High", "Very High"))
+DataSubset$HrHWFactor <- factor(DataSubset$S1HRMHOMEWK, ordered = T)
+DataSubset$DualLangFactor <- factor(DataSubset$X1DUALLANG, ordered = T)
+DataSubset$StuEdExpctFactor <- factor(DataSubset$X1STUEDEXPCT, ordered = T)
+DataSubset$ParEdExpctFactor <- factor(DataSubset$X1PAREDEXPECT, ordered = T)
+DataSubset$ControlFactor <- factor(DataSubset$X1CONTROL, ordered = T)
+DataSubset$LocaleFactor <- factor(DataSubset$X1LOCALE, ordered = T)
+
+DataSubset$Sex <- ifelse(DataSubset$X1SEX == 2, 0, 1)
+DataSubset$Sex <- factor(DataSubset$Sex, ordered = F)
+DataSubset$Race <- factor(DataSubset$X1RACE, ordered = F)
 DataSubset$Hispanic <- factor(DataSubset$X1HISPANIC, ordered = F)
 DataSubset$Black <- factor(DataSubset$X1BLACK, ordered = F)
 DataSubset$White <- factor(DataSubset$X1WHITE, ordered = F)
 
+#PCA
+DataMath <- DataSubset %>%
+  select(S1MENJOYS,
+         S1MENJOYING,
+         S1MWASTE,
+         S1MBORING,
+         S1FAVSUBJ,
+         S1LEASTSUBJ)
+DataMath <- na.omit(DataMath)
+math.pca <- princomp(DataMath, center = TRUE, scale. = TRUE)
+summary(math.pca, loadings = TRUE)
 
 #Visualizing data (unweighted)
-library(ggplot2)
 graph.1 <- ggplot(DataSubset, aes(x = S1HRVIDEO)) + geom_histogram(stat = 'count', bins = 10)
 graph.1 + labs(x = "# of Hours Playing video Games", y = "# of Students", title = "Hours Spent Playing Video Games")
 
@@ -66,12 +118,23 @@ graph.2 <- ggplot(TAB, aes(x = SES.cat, y = S1HRVIDEO)) + geom_bar(stat = 'ident
 graph.2 + labs(x = "Socioeconomic Status", y = "# of Hours Playing Video Games", title = "Hours Spent Playing Video Games by SES")
 
 #Weighting data
-library(survey)
+newwt <- DataSubset$W1STUDENT / (mean(DataSubset$W1STUDENT))
 DataSurvey <- svydesign(id      = ~STU_ID,
                         strata  = NULL,
-                        weights = ~W1STUDENT,
+                        weights = ~newwt,
                         nest    = FALSE,
                         data    = DataSubset)
+
+#Univariate statistics 
+svymean(~S1HRVIDEO, DataSurvey, na.rm = TRUE)
+svysd(~S1HRVIDEO, DataSurvey, na.rm = TRUE)
+svytotal(~VGfactor, DataSurvey, na.rm = TRUE)
+svymean(~X1TXMTSCOR, DataSurvey, na.rm = TRUE)
+svysd(~X1TXMTSCOR, DataSurvey, na.rm = TRUE)
+svytotal(~Mathfactor, DataSurvey, na.rm = TRUE)
+prop.table(svytable(~Sex, DataSurvey))
+svytotal(~Sex, DataSurvey, na.rm = TRUE)
+prop.table(svytable(~SES.cat, DataSurvey))
 
 #Visualizing data (weighted)
 ##Video Games and SES
@@ -126,10 +189,53 @@ graph.7 <- ggplot(TAB.6, aes(x = White, y = S1HRVIDEO)) + geom_bar(stat = 'ident
 graph.7 + labs(x = "Race", y = "Average # of Hours Playing Video Games", title = "Average # of Hours Spent Playing Video Games by Race")
 
 #Pearson Correlation test
-install.packages("jtools")
-library(jtools)
+#install.packages("jtools")
 svycor(~S1HRVIDEO + X1TXMTSCOR, design = DataSurvey, na.rm = TRUE, digits = 4, sig.stats = TRUE)
+svycor(~S1HRVIDEO + X1SEX, design = DataSurvey, na.rm = TRUE, digits = 4, sig.stats = TRUE)
+svycor(~S1HRVIDEO + X1SES, design = DataSurvey, na.rm = TRUE, digits = 4, sig.stats = TRUE)
+svycor(~X1TXMTSCOR + X1SEX, design = DataSurvey, na.rm = TRUE, digits = 4, sig.stats = TRUE)
 
-#T-test 
-svyttest(S1HRVIDEO ~ Sex, design = DataSurvey, na.rm = TRUE)
-svyttest(X1TXMTSCOR ~ Sex, design = DataSurvey, na.rm = TRUE)
+#ANOVA
+model0<-svyglm(S1HRVIDEO ~ White + Black + Hispanic, design=DataSurvey)
+anova(model0)
+
+#Regression
+model.1 <- svyglm(formula = X1TXMTSCOR ~ S1HRVIDEO, DataSurvey)
+summary(model.1)
+lm.beta(model.1)
+fit.svyglm(model.1)
+model.2 <- svyglm(formula = X1TXMTSCOR ~ S1HRVIDEO + X1SEX + S1HRVIDEO:X1SEX, DataSurvey)
+summary(model.2)
+lm.beta(model.2)
+fit.svyglm(model.2)
+model.3 <- svyglm(formula = X1TXMTSCOR ~ S1HRVIDEO 
+                  + X1SEX + S1HRVIDEO:X1SEX 
+                  + X1HISPANIC + X1WHITE 
+                  + X1BLACK + X1DUALLANG 
+                  + X1PAREDU + X1HHNUMBER
+                  + X1SES, DataSurvey)
+summary(model.3)
+lm.beta(model.3)
+fit.svyglm(model.3)
+model.4 <- svyglm(formula = X1TXMTSCOR ~ S1HRVIDEO 
+                  + X1SEX + S1HRVIDEO:X1SEX 
+                  + X1HISPANIC + X1WHITE 
+                  + X1BLACK + X1DUALLANG 
+                  + X1PAREDU + X1HHNUMBER
+                  + X1SES + X1MTHINT + S1HRMHOMEWK
+                  + X1STUEDEXPCT + X1PAREDEXPCT,
+                  DataSurvey)
+summary(model.4)
+lm.beta(model.4)
+fit.svyglm(model.4)
+model.5 <- svyglm(formula = X1TXMTSCOR ~ S1HRVIDEO 
+                  + X1SEX + S1HRVIDEO:X1SEX 
+                  + X1HISPANIC + X1WHITE 
+                  + X1BLACK + X1DUALLANG 
+                  + X1PAREDU + X1HHNUMBER
+                  + X1SES + X1MTHINT + S1HRMHOMEWK
+                  + X1STUEDEXPCT + X1PAREDEXPCT
+                  + X1CONTROL + X1LOCALE 
+                  + X1COUPERTEA, DataSurvey)
+summary(model.5)
+lm.beta(model.5)
